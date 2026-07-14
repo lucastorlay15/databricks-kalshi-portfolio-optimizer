@@ -57,6 +57,7 @@ def bronze_kalshi_cfb_trade_pages_audit():
         .select(
             F.col("checkpoint_run_id").cast("string").alias("checkpoint_run_id"),
             F.col("ingest_run_id").cast("string").alias("ingest_run_id"),
+            F.lit("historical").alias("ingest_mode"),
             F.col("retrieved_at_utc").cast("timestamp").alias("retrieved_at_utc"),
 
             F.col("season").cast("int").alias("season"),
@@ -114,6 +115,7 @@ def bronze_kalshi_cfb_trade_pages_audit():
                     "||",
                     F.coalesce(F.col("checkpoint_run_id"), F.lit("")),
                     F.coalesce(F.col("ingest_run_id"), F.lit("")),
+                    F.coalesce(F.col("ingest_mode"), F.lit("")),
                     F.coalesce(F.col("season").cast("string"), F.lit("")),
                     F.coalesce(F.col("espn_event_id"), F.lit("")),
                     F.coalesce(F.col("market_side"), F.lit("")),
@@ -159,6 +161,7 @@ def bronze_kalshi_cfb_trades():
             # Ingest / audit metadata
             F.col("checkpoint_run_id").cast("string").alias("checkpoint_run_id"),
             F.col("ingest_run_id").cast("string").alias("ingest_run_id"),
+            F.lit("historical").alias("ingest_mode"),
             F.col("retrieved_at_utc").cast("timestamp").alias("retrieved_at_utc"),
 
             # Game metadata
@@ -243,6 +246,7 @@ def bronze_kalshi_cfb_trades():
                 F.concat_ws(
                     "||",
                     F.coalesce(F.col("trade_id"), F.lit("")),
+                    F.coalesce(F.col("ingest_mode"), F.lit("")),
                     F.coalesce(F.col("kalshi_ticker"), F.lit("")),
                     F.coalesce(F.col("market_side"), F.lit("")),
                     F.coalesce(F.col("trade_created_time_utc").cast("string"), F.lit("")),
