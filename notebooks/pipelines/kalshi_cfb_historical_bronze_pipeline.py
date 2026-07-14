@@ -49,7 +49,7 @@ def bronze_kalshi_cfb_trade_pages_audit():
         spark.read
             .format("json")
             .load(LANDING_JSON_PATH)
-            .withColumn("source_file_path", F.input_file_name())
+            .withColumn("source_file_path", F.col("_metadata.file_path"))
     )
 
     return (
@@ -143,7 +143,7 @@ def bronze_kalshi_cfb_trades():
         spark.read
             .format("json")
             .load(LANDING_JSON_PATH)
-            .withColumn("source_file_path", F.input_file_name())
+            .withColumn("source_file_path", F.col("_metadata.file_path"))
     )
 
     exploded_trades_df = (
