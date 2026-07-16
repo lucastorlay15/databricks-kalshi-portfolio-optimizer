@@ -115,3 +115,45 @@ ISOLATION_FOREST_PARAMETERS = {
     "random_state": RANDOM_STATE,
     "n_jobs": -1,
 }
+
+SELECTED_OPPORTUNITY_PERCENTILES = [
+    0.95,
+    0.975,
+    0.99,
+]
+
+MODEL_ARTIFACT_VOLUME_PATH = (
+    "/Volumes/"
+    "databricks_realtime_optimization/"
+    "cfb_analytics/"
+    "model_artifacts/"
+    "supervised_price_model"
+)
+
+DECISION_THRESHOLDS_PATH = (
+    f"{MODEL_ARTIFACT_VOLUME_PATH}/"
+    "decision_thresholds.json"
+)
+
+# ============================================================
+# Model Registry
+# ============================================================
+
+REGISTERED_MODEL_NAME = (
+    "databricks_realtime_optimization."
+    "cfb_analytics."
+    "kalshi_cfb_price_movement_model"
+)
+
+MODEL_SELECTION_ARTIFACT_PATH = (
+    "/Volumes/"
+    "databricks_realtime_optimization/"
+    "cfb_analytics/"
+    "model_artifacts/"
+    "supervised_price_model/"
+    "model_selection.json"
+)
+
+MODEL_ALIAS = "champion"
+
+TARGET_HORIZON_MINUTES = 5
