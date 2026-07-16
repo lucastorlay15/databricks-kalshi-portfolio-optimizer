@@ -1,36 +1,56 @@
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import Ridge
+from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import HistGradientBoostingRegressor
-from sklearn.metrics import (
-    mean_absolute_error,
-    mean_squared_error,
-    r2_score,
-)
-import numpy as np
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import Ridge
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from src.modeling.model_config import (
-    RIDGE_PARAMETERS,
     HIST_GRADIENT_BOOSTING_PARAMETERS,
+    RIDGE_PARAMETERS,
 )
 
 
-def build_model(model_name):
+def build_model(model_name: str) -> Pipeline:
+    if model_name == "dummy_mean":
+        return Pipeline(
+            steps=[
+                (
+                    "imputer",
+                    SimpleImputer(strategy="median"),
+                ),
+                (
+                    "model",
+                    DummyRegressor(strategy="mean"),
+                ),
+            ]
+        )
 
     if model_name == "ridge":
         return Pipeline(
             steps=[
-                ("imputer", SimpleImputer(strategy="median")),
-                ("scaler", StandardScaler()),
-                ("model", Ridge(**RIDGE_PARAMETERS)),
+                (
+                    "imputer",
+                    SimpleImputer(strategy="median"),
+                ),
+                (
+                    "scaler",
+                    StandardScaler(),
+                ),
+                (
+                    "model",
+                    Ridge(**RIDGE_PARAMETERS),
+                ),
             ]
         )
 
     if model_name == "hist_gradient_boosting":
         return Pipeline(
             steps=[
-                ("imputer", SimpleImputer(strategy="median")),
+                (
+                    "imputer",
+                    SimpleImputer(strategy="median"),
+                ),
                 (
                     "model",
                     HistGradientBoostingRegressor(
@@ -40,14 +60,27 @@ def build_model(model_name):
             ]
         )
 
-    raise ValueError(model_name)
+    raise ValueError(
+        f"Unsupported model name: {model_name!r}"
+    )
+
+
+def build_candidate_models() -> dict[str, Pipeline]:
+    return {
+        model_name: build_model(model_name)
+        for model_name in [
+            "dummy_mean",
+            "ridge",
+            "hist_gradient_boosting",
+        ]
+    }
 
 
 def train_model(
-    model_name,
+    model_name: str,
     X_train,
     y_train,
-):
+) -> Pipeline:
     model = build_model(model_name)
 
     model.fit(
@@ -56,33 +89,3 @@ def train_model(
     )
 
     return model
-
-
-def evaluate_model(
-    model,
-    X_test,
-    y_test,
-):
-    predictions = model.predict(X_test)
-
-    metrics = {
-        "test_mae": mean_absolute_error(
-            y_test,
-            predictions,
-        ),
-        "test_rmse": np.sqrt(
-            mean_squared_error(
-                y_test,
-                predictions,
-            )
-        ),
-        "test_r2": r2_score(
-            y_test,
-            predictions,
-        ),
-    }
-
-    return (
-        predictions,
-        metrics,
-    )

@@ -11,29 +11,43 @@ from src.modeling.model_config import (
 def register_model(
     model,
     input_example,
-    metrics,
-    params,
-    metadata,
-):
-
+    metrics: dict[str, float],
+    params: dict,
+    metadata: dict,
+    decision_thresholds: dict,
+    model_selection_artifact: dict,
+    run_name: str,
+) -> tuple[str, str]:
     mlflow.set_registry_uri(
         "databricks-uc"
     )
 
     signature = infer_signature(
-        input_example,
-        model.predict(input_example),
+        model_input=input_example,
+        model_output=model.predict(
+            input_example
+        ),
     )
 
-    with mlflow.start_run() as run:
-
+    with mlflow.start_run(
+        run_name=run_name
+    ) as run:
         mlflow.log_params(params)
-
         mlflow.log_metrics(metrics)
 
         mlflow.log_dict(
             metadata,
             "model_metadata.json",
+        )
+
+        mlflow.log_dict(
+            decision_thresholds,
+            "decision_thresholds.json",
+        )
+
+        mlflow.log_dict(
+            model_selection_artifact,
+            "model_selection.json",
         )
 
         logged_model = (
@@ -45,12 +59,39 @@ def register_model(
             )
         )
 
-        version = mlflow.register_model(
-            logged_model.model_uri,
-            REGISTERED_MODEL_NAME,
+        registered_version = (
+            mlflow.register_model(
+                model_uri=(
+                    logged_model.model_uri
+                ),
+                name=(
+                    REGISTERED_MODEL_NAME
+                ),
+            )
         )
 
+        run_id = run.info.run_id
+
     return (
-        version.version,
-        run.info.run_id,
+        str(registered_version.version),
+        run_id,
     )
+
+
+def load_registered_model(
+    model_version: str,
+):
+    mlflow.set_registry_uri(
+        "databricks-uc"
+    )
+
+    model_uri = (
+        f"models:/{REGISTERED_MODEL_NAME}/"
+        f"{model_version}"
+    )
+
+    model = mlflow.sklearn.load_model(
+        model_uri
+    )
+
+    return model, model_uri
